@@ -1,0 +1,26 @@
+// Миксины: объёмные рамки в стиле «классической Windows» и медиазапрос для телефонов.
+@use 'tokens' as *;
+
+// Стили для узких экранов (телефоны)
+@mixin mobile {
+	@media (max-width: #{$breakpoint-mobile}) {
+		@content;
+	}
+}
+
+// Выпуклая рамка (кнопки)
+@mixin bevel-out {
+	border: 2px outset $color-button;
+}
+
+// Вдавленная рамка (поля ввода, нажатые кнопки)
+@mixin bevel-in {
+	border: 2px inset $color-button;
+}
+
+// Синяя полоса заголовка блока или таблицы
+@mixin title-bar {
+	background: $color-header;
+	color: $color-header-text;
+	font-weight: bold;
+}

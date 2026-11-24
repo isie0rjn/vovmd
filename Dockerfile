@@ -1,3 +1,12 @@
+# 1) Сборка фронтенда (Svelte + Vite → статические файлы в dist/)
+FROM node:24-alpine AS frontend
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# 2) Apache + PHP
 FROM php:8.4-apache
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -13,6 +22,5 @@ RUN apt-get update \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Заглушка, пока нет собранного фронтенда
-RUN mkdir -p /var/www/web/build \
- && echo '<h1>Форум: фронтенд ещё не собран</h1>' > /var/www/web/build/index.html
+# Собранный фронтенд
+COPY --from=frontend /frontend/dist /var/www/web/build

@@ -62,6 +62,72 @@ docker compose exec app vendor/bin/phpunit
 остальные данные в БД не затрагиваются. Первый администратор создаётся напрямую в БД, потому что через API его
 создать нельзя.
 
+## Фронтенд
+
+**Стек:** Svelte 5 + Vite (SPA, без SvelteKit), стили только на SCSS (`sass`), JavaScript + JSDoc, свой роутер.
+Всё состояние — на рунах (`$state`, `$derived`, `$props`), авторизация — только cookie-сессия API (в `localStorage` ничего не хранится).
+
+**Разработка** (Node.js 24 нужен только на компьютере разработчика):
+
+```bash
+docker compose up -d                       # API на http://localhost:8080
+cd frontend && npm install && npm run dev  # сайт на http://localhost:5173
+```
+
+Vite проксирует `/api` на `localhost:8080`, поэтому фронт и API живут на одном адресе: CORS не нужен, cookie сессии работают.
+
+**Продакшен:** `docker compose up -d --build` → http://localhost:8080. Фронтенд собирается внутри Docker (первый этап `Dockerfile`),
+Node на Raspberry Pi не нужен. Apache отдаёт собранную статику, а любой адрес вроде `/publications/5` — `index.html`
+(`FallbackResource`), дальше страницу выбирает роутер.
+
+### Структура `frontend/src`
+
+```
+main.js, App.svelte, routes.js     запуск, каркас страницы, таблица маршрутов
+styles/                            _tokens.scss (цвета, шрифты), _mixins.scss (рамки, mobile), app.scss (глобальные стили)
+lib/router.svelte.js               свой роутер
+lib/resource.svelte.js             createResource — загрузка данных страницы
+lib/session.svelte.js              текущий пользователь и CSRF-токен
+lib/api.js                         fetch: JSON, CSRF-заголовок, ApiError
+lib/validation.js, lib/format.js   проверка форм (как на сервере), даты и склонения
+lib/components/                    Box, Field, Notice, Pagination, PublicationTable, PublicationForm
+pages/                             по одной странице на маршрут
+```
+
+### Как работает роутер
+
+- Адрес хранится в реактивном `SvelteURL`: `router.path` и `router.query` — это обычные реактивные значения, всё, что их читает, обновляется само.
+- `router.start()` ловит клики по внутренним ссылкам и «Назад/Вперёд» (`popstate`), поэтому в разметке достаточно обычных `<a href="/publications/5">`.
+- `matchRoute(routes, path)` ищет маршрут в `routes.js` (`:id` — только цифры) и возвращает страницу и параметры.
+- `App.svelte` выводит страницу как компонент из переменной (`<Page params={...} />`) и закрывает защищённые маршруты:
+  гостя отправляет на `/login?redirect=…`, не-админу показывает 403. Это удобство, настоящую защиту делает API.
+- Параметры списков (страница, фильтры, поиск) лежат в адресе, поэтому работают «Назад» и ссылки.
+
+### Стиль и адаптивность
+
+Веб начала 2000-х: серый фон, синие шапки блоков, подчёркнутые ссылки, объёмные кнопки «как в Windows», счётчик посещений
+(зелёные цифры на чёрном), метка «NEW!», кнопки 88×31 в подвале. Без скруглений, теней, градиентов и эмодзи.
+На экране до 640px: контейнер на всю ширину, шрифт 15px, поля ввода 16px (iOS не увеличивает страницу),
+кнопки форм на всю ширину, ссылки меню не ниже 40px, таблицы превращаются в карточки (подписи из `data-label`).
+
+### Страница → эндпоинты API
+
+| Страница | Адрес | Эндпоинты |
+|---|---|---|
+| Главная | `/` | `GET /api/stats`, `/api/categories`, `/api/publications` (последние и `sort=popular`) |
+| Лента | `/publications` | `GET /api/categories`, `/api/publications` |
+| Тема | `/publications/:id` | `GET /api/publications/{id}`, `POST …/like`, `POST …/comments`, `DELETE /api/comments/{id}`, `DELETE /api/publications/{id}` |
+| Новая тема | `/publications/new` | `GET /api/categories`, `POST /api/publications` |
+| Изменить тему | `/publications/:id/edit` | `GET /api/publications/{id}`, `GET /api/categories`, `PUT /api/publications/{id}` |
+| Поиск | `/search` | `GET /api/categories`, `GET /api/search` |
+| Вход, выход | `/login` | `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` |
+| Регистрация | `/register` | `POST /api/auth/register` |
+| Забыли пароль | `/forgot-password` | `POST /api/auth/forgot-password` |
+| Новый пароль | `/reset-password?token=…` | `POST /api/auth/reset-password` |
+| Админка | `/admin` | — |
+| Пользователи | `/admin/users` | `GET`, `POST /api/admin/users`, `PATCH /api/admin/users/{id}` |
+| Разделы | `/admin/categories` | `GET /api/categories`, `POST`, `PUT`, `DELETE /api/admin/categories/…` |
+
 ## Письма (сброс пароля)
 
 В разработке письма никуда не уходят — их ловит Mailpit: **http://localhost:8025**.

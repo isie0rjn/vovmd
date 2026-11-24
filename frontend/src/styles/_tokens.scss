@@ -1,0 +1,40 @@
+// Дизайн-токены: цвета, шрифты и размеры в духе сайтов начала 2000-х.
+@use 'sass:color';
+
+// Цвета
+$color-page: #e5e5e5;
+$color-paper: #ffffff;
+$color-text: #000000;
+$color-muted: #555555;
+$color-border: #808080;
+$color-header: #336699;
+$color-header-text: #ffffff;
+$color-header-dark: color.adjust($color-header, $lightness: -15%);
+$color-row-alt: #eef2f7;
+$color-link: #0000ee;
+$color-link-visited: #551a8b;
+$color-link-hover: #ff0000;
+$color-button: #d4d0c8;
+$color-button-disabled-text: #7a7a7a;
+$color-error-text: #cc0000;
+$color-error-bg: #ffe0e0;
+$color-success-text: #006600;
+$color-success-bg: #e0ffe0;
+$color-info-text: #003366;
+$color-info-bg: #e0ecf8;
+$color-counter-bg: #000000;
+$color-counter-text: #00ff00;
+$color-new: #cc0000;
+
+// Шрифты
+$font-main: Verdana, Tahoma, Geneva, sans-serif;
+$font-heading: Georgia, 'Times New Roman', serif;
+$font-mono: 'Courier New', monospace;
+$font-size-base: 13px;
+$font-size-mobile: 15px;
+$font-size-input-mobile: 16px;
+
+// Размеры
+$container-width: 760px;
+$breakpoint-mobile: 640px;
+$tap-size: 40px;

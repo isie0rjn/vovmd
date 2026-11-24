@@ -1,0 +1,281 @@
+// Глобальные стили: основа страницы, ссылки, таблицы, формы и кнопки.
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: $color-page;
+	color: $color-text;
+	font: #{$font-size-base} / 1.5 $font-main;
+
+	@include mobile {
+		font-size: $font-size-mobile;
+	}
+}
+
+h1,
+h2,
+h3 {
+	font-family: $font-heading;
+	overflow-wrap: anywhere;
+}
+
+h1 {
+	margin: 0 0 12px;
+	font-size: 22px;
+}
+
+h2 {
+	margin: 0 0 8px;
+	font-size: 17px;
+}
+
+p {
+	margin: 0 0 10px;
+	overflow-wrap: anywhere;
+}
+
+// ---- Ссылки: всегда подчёркнуты ----
+a {
+	color: $color-link;
+	text-decoration: underline;
+
+	&:visited {
+		color: $color-link-visited;
+	}
+
+	&:hover,
+	&:focus-visible {
+		color: $color-link-hover;
+	}
+}
+
+:focus-visible {
+	outline: 1px dotted $color-text;
+	outline-offset: 1px;
+}
+
+hr {
+	margin: 12px 0;
+	border: 2px groove $color-button;
+	border-bottom: 0;
+	height: 0;
+}
+
+// ---- Служебные классы ----
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.muted {
+	color: $color-muted;
+	font-size: 12px;
+}
+
+// Метка «NEW!»: мигает, пока пользователь не отключил анимацию в системе
+.new-badge {
+	color: $color-new;
+	font-size: 11px;
+	font-weight: bold;
+	animation: blink 1s steps(1) infinite;
+
+	@media (prefers-reduced-motion: reduce) {
+		animation: none;
+	}
+}
+
+@keyframes blink {
+	50% {
+		visibility: hidden;
+	}
+}
+
+// ---- Таблицы ----
+table.data {
+	width: 100%;
+	border: 1px solid $color-border;
+	border-collapse: collapse;
+
+	th {
+		@include title-bar;
+		padding: 4px 6px;
+		text-align: left;
+	}
+
+	td {
+		padding: 4px 6px;
+		border: 1px solid $color-border;
+		overflow-wrap: anywhere;
+		vertical-align: top;
+	}
+
+	tbody tr:nth-child(odd) {
+		background: $color-paper;
+	}
+
+	tbody tr:nth-child(even) {
+		background: $color-row-alt;
+	}
+
+	.num {
+		text-align: center;
+		white-space: nowrap;
+	}
+
+	// На телефоне строка таблицы превращается в карточку, подписи берутся из data-label
+	@include mobile {
+		&,
+		thead,
+		tbody,
+		tr,
+		th,
+		td {
+			display: block;
+			width: 100%;
+		}
+
+		thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+		}
+
+		tbody tr {
+			margin-bottom: 8px;
+			border: 1px solid $color-border;
+		}
+
+		td,
+		.num {
+			border: 0;
+			border-bottom: 1px dotted $color-border;
+			text-align: left;
+			white-space: normal;
+
+			&:last-child {
+				border-bottom: 0;
+			}
+
+			&[data-label]::before {
+				content: attr(data-label) ': ';
+				font-weight: bold;
+			}
+		}
+	}
+}
+
+// ---- Формы ----
+input,
+select,
+textarea {
+	max-width: 100%;
+	padding: 3px 4px;
+	background: $color-paper;
+	color: $color-text;
+	font: inherit;
+	@include bevel-in;
+
+	@include mobile {
+		width: 100%;
+		min-height: $tap-size;
+		font-size: $font-size-input-mobile;
+	}
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+	width: auto;
+	min-height: 0;
+	margin: 0 6px 0 0;
+}
+
+textarea {
+	width: 100%;
+	resize: vertical;
+}
+
+fieldset {
+	margin: 0 0 10px;
+	padding: 6px 10px;
+	border: 2px groove $color-button;
+}
+
+legend {
+	padding: 0 4px;
+	font-weight: bold;
+}
+
+button,
+.button {
+	padding: 3px 14px;
+	background: $color-button;
+	color: $color-text;
+	font: inherit;
+	cursor: pointer;
+	@include bevel-out;
+
+	&:active:not(:disabled) {
+		@include bevel-in;
+	}
+
+	&:disabled {
+		color: $color-button-disabled-text;
+		cursor: default;
+	}
+
+	@include mobile {
+		min-height: $tap-size;
+	}
+}
+
+// Кнопки форм на телефоне занимают всю ширину
+.form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-top: 10px;
+
+	@include mobile {
+		flex-direction: column;
+		align-items: stretch;
+
+		button {
+			width: 100%;
+		}
+	}
+}
+
+.form-narrow {
+	max-width: 420px;
+}
+
+// Подписи пунктов radio и checkbox
+.choice {
+	display: block;
+	padding: 2px 0;
+
+	@include mobile {
+		padding: 8px 0;
+	}
+}

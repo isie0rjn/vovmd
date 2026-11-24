@@ -1,0 +1,7 @@
+.git
+.env
+forum.sql
+api/vendor
+api/.phpunit.cache
+frontend/node_modules
+frontend/dist
