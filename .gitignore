@@ -1,0 +1,9 @@
+.env
+.DS_Store
+api/vendor/
+web/node_modules/
+web/build/
+web/.svelte-kit/
+uploads/
+
+api/.phpunit.cache/
